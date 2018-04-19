@@ -7,6 +7,19 @@
 .bar:hover {
   fill: gold ;
 }
+div.tooltip { 
+    position: absolute;     
+    text-align: center;     
+    width: 60px;          
+    height: 28px;         
+    padding: 2px;       
+    font: 12px sans-serif;    
+    background: lightsteelblue; 
+    border: 0px;    
+    border-radius: 8px;     
+    pointer-events: none;     
+}
+
 
 </style>
 <body>
@@ -36,14 +49,17 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", 
           "translate(" + margin.left + "," + margin.top + ")");
-
+var div = d3.select("body").append("div") 
+    .attr("class", "tooltip")       
+    .style("opacity", 0);
 // get the data
 d3.csv("data.csv", function(error, data) {
+  console.log(data)
   if (error) throw error;
 
   // format the data
   data.forEach(function(d) {
-    d.sales = +d.sales;
+    d.sales_q1 = +d.sales_q1;
   });
 
   // Scale the range of the data in the domains
@@ -57,15 +73,29 @@ d3.csv("data.csv", function(error, data) {
       .attr("class", "bar")
       .attr("x", function(d) { return x(d.salesperson); })
       .attr("width", x.bandwidth())
-      .attr("y", function(d) { return y(d.sales); })
-      .attr("height", function(d) { return height - y(d.sales); })
+      .attr("y", function(d) { return y(d.sales_q1); })
+      .attr("height", function(d) { return height - y(d.sales_q1); })
       .on('click', function(d) {
         //INCREASE THE HEIGHT OF THE BAR BY 5 UNITS
         d3.select(this)
-        	.attr("y", function(d) { return y(d.sales+5); })
-        	.attr('height', function(d) {return height - y(d.sales+5)})
+          .transition()
+          .duration(500)
+        	.attr("y", function(d) { return y(d.sales_q1+5); })
+        	.attr('height', function(d) {return height - y(d.sales_q1+5)})
       })
-
+      .on("mouseover", function(d) {    
+          div.transition()    
+              .duration(200)    
+              .style("opacity", .9);    
+          div .html("Sales: " + d.sales_q1)  
+              .style("left", (d3.event.pageX) + "px")   
+              .style("top", (d3.event.pageY - 28) + "px");  
+          })          
+      .on("mouseout", function(d) {   
+          div.transition()    
+              .duration(500)    
+              .style("opacity", 0); 
+      });
   // add the x Axis
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
