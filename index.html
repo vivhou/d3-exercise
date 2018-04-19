@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style> /* set the CSS */
-
 .bar { fill: steelblue;
-	}
+  }
 .bar:hover {
   fill: gold ;
 }
@@ -19,20 +18,16 @@ div.tooltip {
     border-radius: 8px;     
     pointer-events: none;     
 }
-
-
 </style>
 <body>
   
 <!-- load the d3.js library -->     
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
-
 // set the dimensions and margins of the graph
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
-
 // set the ranges
 var x = d3.scaleBand()
           .range([0, width])
@@ -54,18 +49,14 @@ var div = d3.select("body").append("div")
     .style("opacity", 0);
 // get the data
 d3.csv("data.csv", function(error, data) {
-  console.log(data)
   if (error) throw error;
-
   // format the data
   data.forEach(function(d) {
     d.sales_q1 = +d.sales_q1;
   });
-
   // Scale the range of the data in the domains
   x.domain(data.map(function(d) { return d.salesperson; }));
   y.domain([0, 100]);
-
   // append the rectangles for the bar chart
   svg.selectAll(".bar")
       .data(data)
@@ -80,8 +71,8 @@ d3.csv("data.csv", function(error, data) {
         d3.select(this)
           .transition()
           .duration(500)
-        	.attr("y", function(d) { return y(d.sales_q1+5); })
-        	.attr('height', function(d) {return height - y(d.sales_q1+5)})
+          .attr("y", function(d) { return y(d.sales_q1+5); })
+          .attr('height', function(d) {return height - y(d.sales_q1+5)})
       })
       .on("mouseover", function(d) {    
           div.transition()    
@@ -100,22 +91,26 @@ d3.csv("data.csv", function(error, data) {
   svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x));
-
   // add the y Axis
   svg.append("g")
       .call(d3.axisLeft(y));
 
-});
+  //d3.selectAll("input")
+  //  .on('click', updateData)
 
+  //function updateDate() {
+
+
+//  }
+
+});
 </script>
 </body>
 
 <!--TO DO 
-1) change color of bar to yellow on mouseover and change back to blue on mouseout
-
-2) set the y-axis max value to 100
-
-3) BONUS: when clicking on a bar, the height of that bar should increase by increments of 5 units
+1) add two buttons to represent Sales Q1/Sales Q2 (adding input tags in the html with type="button" is probably the easiest way: http://www.d3noob.org/2013/02/update-d3js-data-dynamically-button.html)
+2) when clicking each button, create a function where bars transition to data in "sales_q1" or "sales_q2" 
+  -in the same function, rescale y-axis according to max value of data, this example might be helpful http://bl.ocks.org/phoebebright/3098488
 
 
   -->
