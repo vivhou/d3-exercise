@@ -20,14 +20,25 @@ div.tooltip {
 }
 </style>
 <body>
-  
+<div class="button" id="option1">
+    <input name="updateButton" 
+                 type="button" 
+                value="q1"  />
+</div>
+<div class="button" id="option2">
+    <input name="updateButton" 
+              type="button"
+                value="q2" />
+</div>
 <!-- load the d3.js library -->     
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
+
 // set the dimensions and margins of the graph
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
+
 // set the ranges
 var x = d3.scaleBand()
           .range([0, width])
@@ -47,16 +58,22 @@ var svg = d3.select("body").append("svg")
 var div = d3.select("body").append("div") 
     .attr("class", "tooltip")       
     .style("opacity", 0);
+
+
 // get the data
 d3.csv("data.csv", function(error, data) {
+  console.log(data)
   if (error) throw error;
+
   // format the data
   data.forEach(function(d) {
     d.sales_q1 = +d.sales_q1;
   });
+
   // Scale the range of the data in the domains
   x.domain(data.map(function(d) { return d.salesperson; }));
-  y.domain([0, 100]);
+  y.domain([0, d3.max(data, function(d) { return d.sales_q1})]);
+
   // append the rectangles for the bar chart
   svg.selectAll(".bar")
       .data(data)
@@ -73,6 +90,7 @@ d3.csv("data.csv", function(error, data) {
           .duration(500)
           .attr("y", function(d) { return y(d.sales_q1+5); })
           .attr('height', function(d) {return height - y(d.sales_q1+5)})
+        sortBars()
       })
       .on("mouseover", function(d) {    
           div.transition()    
@@ -88,24 +106,39 @@ d3.csv("data.csv", function(error, data) {
               .style("opacity", 0); 
       });
   // add the x Axis
-  svg.append("g")
+  var xAxis = svg.append("g")
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x));
+
   // add the y Axis
-  svg.append("g")
+  var yAxis = svg.append("g")
+      .attr("class", "yaxis")
       .call(d3.axisLeft(y));
 
-  //d3.selectAll("input")
-  //  .on('click', updateData)
+  d3.selectAll("input")
+    .on('click', updateData)
 
-  //function updateData() {
+  function updateData() {
 
+    var quarter = (d3.select(this).node().value)
+    var sales = (quarter == "q2") ? "sales_q2" : "sales_q1"
+    y.domain([0, d3.max(data, function(d) { return d[sales]})]);
+    yAxis
+      .transition().duration(500)//.ease("sin-in-out")  // https://github.com/mbostock/d3/wiki/Transitions#wiki-d3_ease
+      .call(d3.axisLeft(y));
 
-//  }
+      d3.selectAll(".bar")
+        .transition()
+        .duration(500)
+        .attr("y", function(d) { return y(d[sales]); })
+        .attr('height', function(d) {return height - y(d[sales])})
+  }
 
 });
+
 </script>
 </body>
+
 
 <!--TO DO 
 1) add two buttons to represent Sales Q1/Sales Q2 (adding input tags in the html with type="button" is probably the easiest way: http://www.d3noob.org/2013/02/update-d3js-data-dynamically-button.html)
